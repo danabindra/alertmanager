@@ -1,0 +1,11 @@
+groups:
+- name: weka-debug-alerts
+  rules:
+  - alert: WekaDebugLogs
+    expr: count_over_time({job="syslog", severity="DEBUG", host="$YOUR_HOSTNAME"} |= "weka" [2m]) > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Weka logs with DEBUG severity detected"
+      description: "Detected DEBUG logs containing the word 'weka' in syslog from host $YOUR_HOSTNAME"
