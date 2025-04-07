@@ -1,0 +1,43 @@
+// For a full configuration reference, see https://grafana.com/docs/alloy
+logging {
+  level = "debug"
+  format = "logfmt"
+}
+
+loki.source.syslog "syslog" {
+relabel_rules = loki.relabel.add_syslog_labels.rules
+ listener  {
+  address = "10.x.x.x:6514"
+  labels   = { "component" = "loki.source.syslog" }
+  label_structured_data = true
+//  use_rfc5424_message = true
+
+  tls_config {
+    cert_file = "/etc/ssl/certs/alloy.crt"
+    key_file = "/etc/ssl/private/alloy.key"
+  }
+ }
+
+ forward_to = [loki.write.local_loki.receiver]
+}
+
+loki.relabel "add_syslog_labels" {
+    forward_to = []
+
+    rule {
+        target_label = "ip_address"
+        source_labels = [ "__syslog_connection_ip_address" ]
+    }
+    rule {
+        target_label = "hostname"
+        source_labels = [ "__syslog_connection_hostname" ]
+    }
+}
+
+
+loki.write "local_loki" {
+    endpoint {
+      url = "http://localhost:3100/loki/api/v1/push"
+    }
+}
+
