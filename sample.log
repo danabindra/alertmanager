@@ -1,0 +1,9 @@
+[1115603.605936] {1}[Hardware Error]:   error_type: 2, single-bit ECC
+[1115603.640046] mce: [Hardware Error]: Machine check events logged
+[1115603.640054] [Hardware Error]: Corrected error, no action required.
+[1115603.640616] [Hardware Error]: CPU:0 (19:11:1) MC255_STATUS[-|CE|MiscV|AddrV|-|-|-|-|-]: 0x9c0000000000009f
+[1115603.641123] [Hardware Error]: Error Addr: 0x00000046b37413c0
+[1115603.641584] [Hardware Error]: PPIN: 0x02b620c32c25c009
+[1115603.642041] [Hardware Error]: IPID: 0x0000000000000000
+[1115603.642501] [Hardware Error]: cache level: L3/GEN, tx: RESV
+[1115807.335969] {2}[Hardware Error]: Hardware error from APEI Generic Hardware Error Source: 20480
