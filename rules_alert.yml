@@ -4,7 +4,7 @@ groups:
   - alert: ECCErrorDetected
     expr: |
       count_over_time(
-        {job="systemlogs"}
+        {job="serverlogs"}
         |= "[Hardware Error]:\u00a0 \u00a0error_type: 2, single-bit ECC"
         [5m]
       ) > 0
