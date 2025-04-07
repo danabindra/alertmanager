@@ -1,11 +1,34 @@
 groups:
-- name: weka-debug-alerts
+- name: hardware_ecc_errors
   rules:
-  - alert: WekaDebugLogs
-    expr: count_over_time({job="syslog", severity="DEBUG", host="$YOUR_HOSTNAME"} |= "weka" [2m]) > 0
+  - alert: ECCErrorDetected
+    expr: |
+      count_over_time(
+        {job="systemlogs"}
+        |= "[Hardware Error]:\u00a0 \u00a0error_type: 2, single-bit ECC"
+        [5m]
+      ) > 0
     for: 1m
     labels:
       severity: warning
+      type: hardware
+      component: memory
     annotations:
-      summary: "Weka logs with DEBUG severity detected"
-      description: "Detected DEBUG logs containing the word 'weka' in syslog from host $YOUR_HOSTNAME"
+      summary: "Single-bit ECC Error Detected"
+      description: "A single-bit ECC error has been detected in the system logs. This indicates a corrected hardware memory error. While corrected, it might be a sign of underlying issues and should be investigated."
+      log_line: "{{ $value }}" # The number of times this log line appeared in the last 5 minutes
+
+receivers:
+- name: slack-hardware-alerts
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL' # Replace with your Slack webhook URL
+    channel: '#hardware-alerts' # Replace with your desired Slack channel
+    send_resolved: true
+    title: '⚠️ {{ .Labels.severity | toUpper }} - Single-bit ECC Error Detected'
+    text: |-
+      {{ .Annotations.summary }}
+
+      Details:
+      - Severity: {{ .Labels.severity | default "unknown" }}
+      - Component: {{ .Labels.component | default "unknown" }}
+      - Log Count (last 5m): {{ .Annotations.log_line }}
