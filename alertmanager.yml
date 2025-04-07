@@ -1,1 +1,81 @@
+global:
+  resolve_timeout: 5m
+  smtp_from: 'alertmanager@example.com'
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_auth_username: 'alertmanager@example.com'
+  smtp_auth_password: 'your_smtp_password'
+  smtp_require_tls: true
 
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'slack-general'
+  routes:
+    - receiver: 'slack-critical'
+      match:
+        severity: 'critical'
+    - receiver: 'email-ops'
+      match:
+        severity: 'major'
+
+receivers:
+  - name: 'slack-general'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX' # Replace with your Slack webhook URL
+        channel: '#alerts-general'
+        send_resolved: true
+        title: '{{ .GroupLabels.alertname }} firing'
+        text: |-
+          {{ range .Alerts.Firing }}
+          *Alert:* {{ .Annotations.summary | default .Labels.alertname }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity | default "unknown" }}
+          *Instance:* {{ .Labels.instance | default "unknown" }}
+          *Job:* {{ .Labels.job | default "unknown" }}
+          {{ end }}
+        resolve_text: |-
+          {{ range .Alerts.Resolved }}
+          *Resolved:* {{ .Annotations.summary | default .Labels.alertname }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity | default "unknown" }}
+          *Instance:* {{ .Labels.instance | default "unknown" }}
+          *Job:* {{ .Labels.job | default "unknown" }}
+          {{ end }}
+
+  - name: 'slack-critical'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/T00000000/B00000000/YYYYYYYYYYYYYYYYYYYYYYYY' # Replace with your critical Slack webhook URL
+        channel: '#alerts-critical'
+        send_resolved: true
+        title: '🔥 CRITICAL: {{ .GroupLabels.alertname }} firing'
+        text: |-
+          {{ range .Alerts.Firing }}
+          *🔥 CRITICAL Alert:* {{ .Annotations.summary | default .Labels.alertname }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance | default "unknown" }}
+          *Job:* {{ .Labels.job | default "unknown" }}
+          {{ end }}
+        resolve_text: |-
+          {{ range .Alerts.Resolved }}
+          *✅ Resolved CRITICAL:* {{ .Annotations.summary | default .Labels.alertname }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance | default "unknown" }}
+          *Job:* {{ .Labels.job | default "unknown" }}
+          {{ end }}
+
+  - name: 'email-ops'
+    email_configs:
+      - to: 'ops@example.com'
+        subject: '[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}'
+        html: |-
+          {{ range .Alerts }}
+            {{ if .Firing }}
+              <p><strong>Alert:</strong> {{ .Annotations.summary | default .Labels.alertname }}</p>
+              <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+              <p><strong>Severity:</strong> {{ .Labels.severity | default "unknown" }}</p>
+              <p><strong>Instance:</strong> {{ .Labels.instance | default "unknown" }}</p>
+              <p><strong>Job:</strong> {{ .Labels.job | default "unknown" }}</p>
+            {{ end }}
+          {{ end }}
