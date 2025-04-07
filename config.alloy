@@ -21,7 +21,7 @@ relabel_rules = loki.relabel.add_syslog_labels.rules
   }
  }
  labels = {
-    job = "syslog"
+    job = "serverlogs"
     __syslog_connection_ip_address = ""
     __syslog_connection_hostname = ""
   }
