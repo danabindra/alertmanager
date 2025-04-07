@@ -15,13 +15,13 @@ groups:
       component: memory
     annotations:
       summary: "Single-bit ECC Error Detected"
-      description: "A single-bit ECC error has been detected in the system logs. This indicates a corrected hardware memory error. While corrected, it might be a sign of underlying issues and should be investigated."
+      description: "An ECC error has been detected in the system logs. This indicates a corrected hardware memory error. "
       log_line: "{{ $value }}" # The number of times this log line appeared in the last 5 minutes
 
 receivers:
 - name: slack-hardware-alerts
   slack_configs:
-  - api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL' # Replace with your Slack webhook URL
+  - api_url: 'https://hooks.slack.com/
     channel: '#hardware-alerts' # Replace with your desired Slack channel
     send_resolved: true
     title: '{{ .Labels.severity | toUpper }} - Single-bit ECC Error Detected'
